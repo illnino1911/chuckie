@@ -22,7 +22,7 @@ var Emitter = function()
 	this.alpha = 1.0;
 	
 	this.image = document.createElement("img");
-	this.image.src = "gun.png";
+	this.image.src = "tutorial.png";
 	
 	this.dir_x = 5.0;
 	this.dir_y = 5.5;

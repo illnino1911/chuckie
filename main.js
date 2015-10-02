@@ -109,7 +109,7 @@ var cam_y = 0;
 
 var example_emitter = new Emitter();
 
-example_emitter.initialise(400, 1, 1, 0, 3000, 1.5, 50, 0.5, true);
+example_emitter.initialise(1, 200, 100, 0, 3000, 1.5, 50, 0.5, true);
 
 
 
@@ -178,11 +178,6 @@ function runGameOver(deltaTime)
 	context.font="50px Andy";
 	context.fillText("GAME OVER", canvas.width - 950,150);
 	context.fillText("press F5 to play again", canvas.width - 1050,200);
-	
-	context.fillStyle = "#00ff00";
-	context.font="32px Algerian";
-	var scoreText = "highScore: " + score;
-	context.fillText(scoreText, canvas.width - 1600, 35);
 }
 
 function run()
