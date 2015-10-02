@@ -4,6 +4,11 @@ var context = canvas.getContext("2d");
 var startFrameMillis = Date.now();
 var endFrameMillis = Date.now();
 
+function lerp(value, min, max)
+{
+	return value * (max - min) + min;
+}
+
 // This function will return the time in seconds since the function 
 // was last called
 // You should only call this function once per frame
@@ -28,6 +33,11 @@ function getDeltaTime()
 }
 
 //-------------------- Don't modify anything above here
+var STATE_SPLASH = 0;
+var STATE_GAME = 1;
+var STATE_GAMEOVER = 2;
+var cur_state = STATE_SPLASH;
+var splashTimer = 2;
 
 var SCREEN_WIDTH = canvas.width;
 var SCREEN_HEIGHT = canvas.height;
@@ -40,7 +50,7 @@ var background_sound = new Howl (
 	volume: 0.5
 
 });
-background_sound.play();
+//background_sound.play();
 
 // some variables to calculate the Frames Per Second (FPS - this tells use
 // how fast our game is running, and allows us to make the game run at a 
@@ -48,6 +58,9 @@ background_sound.play();
 var fps = 0;
 var fpsCount = 0;
 var fpsTime = 0;
+
+var background = document.createElement("img");
+background.src = "bg.png";
 
 function initialize(input_level)
 {
@@ -84,6 +97,8 @@ function initialize(input_level)
 	return return_cells;
 }
 
+
+
 var cells = initialize(level);
 
 var keyboard = new Keyboard();
@@ -94,14 +109,35 @@ var cam_y = 0;
 
 var example_emitter = new Emitter();
 
-example_emitter.initialise(200, 200, 1, 0, 3000, 1.5, 100, 0.5, true);
+example_emitter.initialise(400, 1, 1, 0, 3000, 1.5, 50, 0.5, true);
 
-function run()
+
+
+function runSplash(deltaTime)
 {
+	if (splashTimer > 0)
+	{
+	context.fillStyle = "#87565f";
+	context.font="24px Andy";
+	context.fillText("starting game please wait...", 200, 240);
+	splashTimer -= deltaTime;
+	}
+	else
+		cur_state = STATE_GAME;
+	
+	
+	
+}
+
+function runGame(deltaTime)
+{
+	
 	context.fillStyle = "#ccc";		
 	context.fillRect(0, 0, canvas.width, canvas.height);
+	context.fillStyle = "white";
+	context.font = "24px Snap ITC";
+	context.fillText("GAME ON!", 750,35);
 	
-	var deltaTime = getDeltaTime();
 
 	var wanted_cam_X;
 	var wanted_cam_y;
@@ -119,12 +155,55 @@ function run()
 	if (wanted_cam_y > MAP.th * TILE - SCREEN_HEIGHT)
 		wanted_cam_y = MAP.th * TILE - SCREEN_HEIGHT;
 	
-	drawMap(cam_x, cam_y);
+	cam_x = Math.floor(lerp(0.1, cam_x, wanted_cam_x));
+	cam_y = Math.floor(lerp(0.1, cam_y, wanted_cam_y));
 	
-	//added this	
+	drawMap(cam_x, cam_y);
+
 	player.update(deltaTime);
-	player.draw(cam_x, cam_y);
-	//added this
+	player.draw(cam_x, cam_y);	
+	
+		
+	if (player.lives < 0)
+	{
+		gameState = STATE_GAMEOVER;
+	}
+
+	
+}
+
+function runGameOver(deltaTime)
+{
+	context.fillStyle = "red";
+	context.font="50px Andy";
+	context.fillText("GAME OVER", canvas.width - 950,150);
+	context.fillText("press F5 to play again", canvas.width - 1050,200);
+	
+	context.fillStyle = "#00ff00";
+	context.font="32px Algerian";
+	var scoreText = "highScore: " + score;
+	context.fillText(scoreText, canvas.width - 1600, 35);
+}
+
+function run()
+{
+	context.fillStyle = "#ccc";		
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	
+	var deltaTime = getDeltaTime();
+	
+	switch(cur_state)
+		{
+		case STATE_SPLASH:
+			runSplash(deltaTime);
+	break;
+		case STATE_GAME:
+			runGame(deltaTime);
+	break;
+		case STATE_GAMEOVER:
+			runGameOver(deltaTime);
+		break;
+		};
 	
 	example_emitter.update(deltaTime);
 	example_emitter.draw(cam_x, cam_y);

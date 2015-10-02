@@ -135,6 +135,8 @@ var LAYER_BACKGROUND = 0;
 var LAYER_PLATFORMS = 1;
 var LAYER_LADDERS = 2;
 
+this.lives_image = document.createElement("img");
+	this.lives_image.src = "gun.png";
 
 var MAP = {
 	tw:	level.width,

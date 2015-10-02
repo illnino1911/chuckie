@@ -63,27 +63,51 @@ var Player = function()
 	this.lives = 3;
 	this.respawn_x = this.x;
 	this.respawn_y = this.y;
-
+	
 	this.lives_image = document.createElement("img");
 	this.lives_image.src = "lives.png";
 	
-	this.max_bullets = 50;
+	this.max_bullets = 5;
 	this.bullets = [];
-	this.cur_bullet_index = 50;
+	this.cur_bullet_index = 0;
 	for (var idx = 0; idx < this.max_bullets; idx++)
 	{
 		this.bullets[idx] = new Bullet();
 	}
+	
 	this.shoot_cooldown = 0.0;
 	this.shoot_timer = 0.1;
 	
+	var self = this;
+	this.is_jump_sfx_playing = false;
 	
+	this.jump_sfx = new Howl(
+	{
+		urls: ["hup.wav"],
+		buffer : true,
+		volume : 1,
+		onend : function(){
+				self.is_jump_sfx_playing = false;
+		}
 	
+	});
+
+	this.is_shoot_sfx_playing = false;
+	this.shoot_sfx = new Howl({
+			urls : ["fireEffect.ogg"],
+			buffer : true,
+			volume : 1,
+			onend : function(){
+					self.is_shoot_sfx_playing = false;
+			}
+	});
+
 }
 
 Player.prototype.update = function(deltaTime)
 {
 	this.sprite.update(deltaTime);
+	
 	var left, right, jump;
 	left = right = jump = false;
 	
@@ -91,74 +115,71 @@ Player.prototype.update = function(deltaTime)
 	{
 		left = true;
 		this.direction = right;
-		if (this.sprite.currentAnimation !=ANIM_WALK_LEFT)
-			this.sprite.setAnimation(ANIM_WALK_LEFT);
+		if (this.sprite.currentAnimation != ANIM_WALK_LEFT && !this.jumping)
+				this.sprite.setAnimation(ANIM_WALK_LEFT);
 	}
 	else if (keyboard.isKeyDown(keyboard.KEY_RIGHT))
 	{
 		right = true;
 		this.direction = right;
-		if (this.sprite.currentAnimation !=ANIM_WALK_RIGHT)
-			this.sprite.setAnimation(ANIM_WALK_RIGHT);
-	}
-		if (keyboard.isKeyDown(keyboard.KEY_SPACE))
-			
-			
-				if (keyboard.isKeyDown(keyboard.KEY_SHIFT))
-				{
-					if (this.shoot.cooldown <= 0);
-					{
-					if(left)
-						this.bullets(this.cur_bullet_index).fire(this.x, this.y -1, 0);
-					else
-						this.bullets(this.cur_bullet_index).fire(this.x, this.y -1, 0);
-					
-					this.shoot_cooldown = this.shoot_timer;
-					
-					}
-				}
-				if (this.shoot_cooldown > 0);
-					this.shoot_cooldown -= deltaTime;
-
-			
-	
-		if(keyboard.isKeyDown(keyboard.KEY_LEFT) == true)
-	{
-			
-	}
-	else if(keyboard.isKeyDown(keyboard.KEY_RIGHT) == true)
-	{
-			
+		if (this.sprite.currentAnimation !=ANIM_WALK_RIGHT && !this.jumping)
+				this.sprite.setAnimation(ANIM_WALK_RIGHT);
 	}
 	else
 	{
-		if (this.jumping == false && this.falling == false)
+		if (!this.jumping && !this.falling)
 		{
-			if(this.direction == left)
+			if (this.direction == left)
 			{
-				if(this.sprite.currentAnimation != ANIM_IDLE_LEFT)
+				if (this.sprite.currentAnimation != ANIM_IDLE_LEFT)
 					this.sprite.setAnimation(ANIM_IDLE_LEFT);
 			}
 			else
 			{
-				(this.sprite.currentAnimation != ANIM_IDLE_RIGHT)
-				this.sprite.setAnimation(ANIM_IDLE_RIGHT);
+				if (this.sprite.currentAnimation != ANIM_IDLE_RIGHT)
+					this.sprite.setAnimation(ANIM_IDLE_RIGHT);
 			}
 		}
 	}
-	if(keyboard.isKeyDown(keyboard.KEY_SPACE) == true)
-		
+	if (keyboard.isKeyDown(keyboard.KEY_SPACE))
+	{
 		jump = true;
-		if(left == true) 
-	
-	{
-	this.sprite.setAnimation(ANIM_JUMP_LEFT);
-	}
-	if(right == true) 
-	{
-		this.sprite.setAnimation(ANIM_JUMP_RIGHT);
+		if (left == true)
+			this.sprite.setAnimation(ANIM_JUMP_LEFT);
+		if (right == true)
+			this.sprite.setAnimation(ANIM_JUMP_RIGHT);
 	}
 	
+	if (keyboard.isKeyDown(keyboard.KEY_SHIFT))
+	{
+		if (this.shoot_cooldown <= 0)
+		{
+			this.shoot_sfx.play();
+			this.is_shoot_sfx_playing = true;
+							
+			var jitter = Math.random() * 0.2 - 0.1;
+						
+			if(this.direction == left)
+				this.bullets[this.cur_bullet_index].fire(this.x, this.y, -1, jitter);
+			else
+				this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+		
+			this.shoot_cooldown = this.shoot_timer;
+			
+			this.cur_bullet_index ++;
+			if (this.cur_bullet_index >= this.max_bullets)
+			{
+				this.cur_bullet_index = 0;
+			}
+		}
+	}
+	if (this.shoot_cooldown > 0)
+		this.shoot_cooldown -= deltaTime;
+		
+	for (var i = 0; i < this.max_bullets; i++)
+	{
+		this.bullets[i].update(deltaTime);
+	}
 	
 	var wasleft = this.velocity_x < 0;
 	var wasright = this.velocity_x > 0;
@@ -178,14 +199,20 @@ Player.prototype.update = function(deltaTime)
 	
 	if (jump && !this.jumping && !falling)
 	{
+		this.jump_sfx.play();
+		this.is_jump_sfx_playing = true;
+		
 		ddy = ddy - JUMP;
 		this.jumping = true;
 		if(this.direction == left)
+		{
 			this.sprite.setAnimation(ANIM_JUMP_LEFT)
+		}
 		else
+		{
 			this.sprite.setAnimation(ANIM_JUMP_RIGHT)
+		}
 	}
-	
 	this.x = Math.floor(this.x + (deltaTime * this.velocity_x));
 	this.y = Math.floor(this.y + (deltaTime * this.velocity_y));
 	this.velocity_x = bound(this.velocity_x + (deltaTime * ddx), -MAXDX, MAXDX);
@@ -252,7 +279,7 @@ Player.prototype.update = function(deltaTime)
 	{
 		this.x = this.respawn_x;
 		this.y = this.respawn_y;
-		this.lives -=1;
+		this.lives --;
 	}
 	
 	
@@ -271,4 +298,10 @@ Player.prototype.draw = function(_cam_x, _cam_y)
 	{
 		this.bullets[idx].draw(_cam_x, _cam_y);
 	}
+	
+		for (var idx = 0; idx < this.gun; idx++)
+	{
+		context.drawImage(this.gun_image, 30 + idx * (this.gun_image.width), 11);
+	}	
+
 }	

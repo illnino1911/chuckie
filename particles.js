@@ -22,10 +22,10 @@ var Emitter = function()
 	this.alpha = 1.0;
 	
 	this.image = document.createElement("img");
-	this.image.src = "particle.png";
+	this.image.src = "gun.png";
 	
-	this.dir_x = 0.0;
-	this.dir_y = 1.0;
+	this.dir_x = 5.0;
+	this.dir_y = 5.5;
 	
 	this.rand_dir = false;
 	
@@ -34,7 +34,7 @@ var Emitter = function()
 	this.pps = 0;
 	this.particles_to_spawn = 0.0;
 	
-	this.cur_particle_index = 0.0;
+	this.cur_particle_index = 0;
 }
 
 Emitter.prototype.initialise = function(x, y, dir_x, dir_y, 
@@ -79,8 +79,8 @@ Emitter.prototype.update = function(deltaTime)
 			if (length == 0)
 				rand_dir_x = 1;
 			
-				this.particles[this.cur_particle_index].vel_x = rand_dir_x / length;
-				this.particles[this.cur_particle_index].vel_y = rand_dir_y/ length;
+			this.particles[this.cur_particle_index].vel_x = rand_dir_x / length;
+			this.particles[this.cur_particle_index].vel_y = rand_dir_y/ length;
 			
 		}
 		else
@@ -92,9 +92,9 @@ Emitter.prototype.update = function(deltaTime)
 			this.cur_particle_index ++;
 			if (this.cur_particle_index >= this,particles.length)
 				this.cur_particle_index = 0;
-				
-			this.particles_to_spawn --;
+			
 		}
+		this.particles_to_spawn --;
 	}
 	
 	for (var idx = 0; idx < this.particles.length; idx++)
