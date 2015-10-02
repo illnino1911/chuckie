@@ -192,6 +192,9 @@ function runGameOver(deltaTime)
 
 function run()
 {
+	context.fillStyle = "#ccc";		
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	
 	
 	var deltaTime = getDeltaTime();
 	
