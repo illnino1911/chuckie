@@ -4,6 +4,8 @@ var context = canvas.getContext("2d");
 var startFrameMillis = Date.now();
 var endFrameMillis = Date.now();
 
+
+
 function lerp(value, min, max)
 {
 	return value * (max - min) + min;
@@ -36,8 +38,9 @@ function getDeltaTime()
 var STATE_SPLASH = 0;
 var STATE_GAME = 1;
 var STATE_GAMEOVER = 2;
-var cur_state = STATE_SPLASH;
-var splashTimer = 2;
+var STATE_GAMEFINISH = 4;
+var splashTimer = 4;
+var gameState = STATE_SPLASH;
 
 var SCREEN_WIDTH = canvas.width;
 var SCREEN_HEIGHT = canvas.height;
@@ -50,7 +53,7 @@ var background_sound = new Howl (
 	volume: 0.5
 
 });
-//background_sound.play();
+background_sound.play();
 
 // some variables to calculate the Frames Per Second (FPS - this tells use
 // how fast our game is running, and allows us to make the game run at a 
@@ -123,7 +126,7 @@ function runSplash(deltaTime)
 	splashTimer -= deltaTime;
 	}
 	else
-		cur_state = STATE_GAME;
+		gameState = STATE_GAME;
 	
 	
 	
@@ -176,18 +179,23 @@ function runGameOver(deltaTime)
 {
 	context.fillStyle = "red";
 	context.font="50px Andy";
-	context.fillText("GAME OVER", canvas.width - 950,150);
-	context.fillText("press F5 to play again", canvas.width - 1050,200);
+	context.fillText("GAME OVER", canvas.width - 400,100);
+	context.fillText("press F5 to play again", canvas.width - 460,150);
+	gameState = STATE_GAMEOVER;
+	player.isDead = false;
+	player.lives = 3;
+	return;
 }
+
+
+
 
 function run()
 {
-	context.fillStyle = "#ccc";		
-	context.fillRect(0, 0, canvas.width, canvas.height);
 	
 	var deltaTime = getDeltaTime();
 	
-	switch(cur_state)
+	switch(gameState)
 		{
 		case STATE_SPLASH:
 			runSplash(deltaTime);
@@ -197,7 +205,11 @@ function run()
 	break;
 		case STATE_GAMEOVER:
 			runGameOver(deltaTime);
-		break;
+	break;
+		case STATE_GAMEFINISH:
+			runGameFinish(deltaTime);
+	break;
+		
 		};
 	
 	example_emitter.update(deltaTime);

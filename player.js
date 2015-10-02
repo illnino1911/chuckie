@@ -107,6 +107,36 @@ var Player = function()
 Player.prototype.update = function(deltaTime)
 {
 	this.sprite.update(deltaTime);
+		
+	if (this.y > MAP.th * TILE + 300)
+	{
+		if (this.lives > 1)
+		{
+			this.lives --;
+			this.x = this.spawn_x;
+			this.y = this.spawn_y;
+		}
+		else if (this.lives == 1)
+		{
+			this.lives --;
+		}
+	}
+	
+	if(this.lives == 0)
+	{
+		gameState = STATE_GAMEOVER;
+		return;
+	}
+	if((this.x >= MAP.tw * TILE - TILE * 4) && (this.y >= MAP.th * TILE - TILE * 4))
+	{
+		gameState = STATE_GAMEFINISH;
+		return;
+	}
+	
+	
+	
+	
+	
 	
 	var left, right, jump;
 	left = right = jump = false;
